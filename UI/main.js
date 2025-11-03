@@ -2,24 +2,37 @@
 
 const players = ["X", "O"];
 const boardState = Array.from({ length: 5 }, () => Array(5).fill("")); // empty 5x5 array
+const playerType = ["Human", "AI"];
 
 let gameTurn = 0;
 
 
 window.onload = function () {
-    newGame();
+    const selects = [
+        document.getElementById("playerType1"),
+        document.getElementById("playerType2")
+    ];
+
+    playerType.forEach((t, i) => {
+        selects.forEach(select => {
+            const opt = new Option(t, i);
+            select.add(opt);
+        });
+    });
+
+    generateBoard();
 }
 
 function newGame() {
     for (let i = 0; i < 5; i++) {
-       for (let j = 0; j < 5; j++) {
-        boardState[i][j] = '';        
-       }
+        for (let j = 0; j < 5; j++) {
+            boardState[i][j] = '';
+        }
     }
     gameTurn = 0;
 
     updateGameInfo();
-    generateBoard();
+    updateBoard();
 }
 
 function getCrtPlayer() {
@@ -29,9 +42,9 @@ function getCrtPlayer() {
 function updateGameInfo(info = null) {
     if (info) {
         document.getElementById("gameInfo").innerHTML = info;
-    }else{
+    } else {
         document.getElementById("gameInfo").innerHTML = "player '" + getCrtPlayer() + "' to play. Turn " + gameTurn + ".";
-    }    
+    }
 }
 
 function generateBoard() {
@@ -44,10 +57,10 @@ function generateBoard() {
             const cellClass = isOuter ? "outer-cell" : (isPlayable ? "playable-cell cell" : "locked-cell cell");
 
             board += `<td id="cell-${i}-${j}" 
-                           class="${cellClass}" 
-                           data-row="${i}" 
-                           data-col="${j}" 
-                           ${isPlayable && !isOuter ? `onclick="pickCube(this)"` : ""}></td>`;
+                        class="${cellClass}" 
+                        data-row="${i}" 
+                        data-col="${j}" 
+                        ></td>`;
         }
         board += "</tr>";
     }
@@ -90,35 +103,35 @@ function pickCube(selectedCell) {
 
 function placeCube(selectedOuterCell, isSameRow) {
     // the -1 is to match the index of the boardState array
-    const refRow = parseInt(selectedOuterCell.dataset.row)-1;
-    const refCol = parseInt(selectedOuterCell.dataset.col)-1;
+    const refRow = parseInt(selectedOuterCell.dataset.row) - 1;
+    const refCol = parseInt(selectedOuterCell.dataset.col) - 1;
 
     // place the cube
     if (isSameRow) {
         if (refCol === -1) {
             // placing the cube from the left
             for (let i = 4; i > 0; i--) {
-                boardState[refRow][i] = boardState[refRow][i-1];
+                boardState[refRow][i] = boardState[refRow][i - 1];
             }
             boardState[refRow][0] = getCrtPlayer();
-        }else{
+        } else {
             // placing the cube from the right
             for (let i = 0; i < 4; i++) {
-                boardState[refRow][i] = boardState[refRow][i+1];
+                boardState[refRow][i] = boardState[refRow][i + 1];
             }
             boardState[refRow][4] = getCrtPlayer();
         }
-    }else{
+    } else {
         if (refRow === -1) {
             // placing the cube from the top
             for (let i = 4; i > 0; i--) {
-                boardState[i][refCol] = boardState[i-1][refCol];
+                boardState[i][refCol] = boardState[i - 1][refCol];
             }
             boardState[0][refCol] = getCrtPlayer();
-        }else{
+        } else {
             // placing the cube from the bottom
             for (let i = 0; i < 4; i++) {
-                boardState[i][refCol] = boardState[i+1][refCol];
+                boardState[i][refCol] = boardState[i + 1][refCol];
             }
             boardState[4][refCol] = getCrtPlayer();
         }
@@ -150,13 +163,15 @@ function nextTurn() {
 function updateBoard() {
     for (let i = 0; i < boardState.length; i++) {
         for (let j = 0; j < boardState[i].length; j++) {
-            const c = document.getElementById(`cell-${i+1}-${j+1}`);
+            const c = document.getElementById(`cell-${i + 1}-${j + 1}`);
             c.innerHTML = boardState[i][j];
 
             const isPlayable = (boardState[i][j] === getCrtPlayer() || boardState[i][j] === '');
             if ((i === 0 || i === 4 || j === 0 || j === 4) && isPlayable) {
-                    c.classList.add("playable-cell");
-                    c.onclick = () => pickCube(c);
+                c.className = "playable-cell cell";
+                c.onclick = () => pickCube(c);
+            } else {
+                c.className = "locked-cell cell";
             }
         }
     }
@@ -171,7 +186,7 @@ function checkForWinner() {
         for (let row = 0; row < size; row++) {
             if (boardState[row].every(cell => cell === player)) {
                 updateGameInfo(winInfo);
-                displayWinner(player, 'row', row+1);
+                displayWinner(player, 'row', row + 1);
             }
         }
 
@@ -184,9 +199,9 @@ function checkForWinner() {
                     break;
                 }
             }
-            if (columnWin){
+            if (columnWin) {
                 updateGameInfo(winInfo);
-                displayWinner(player, 'col', col+1);
+                displayWinner(player, 'col', col + 1);
             }
         }
 
@@ -198,7 +213,7 @@ function checkForWinner() {
                 break;
             }
         }
-        if (mainDiagWin){
+        if (mainDiagWin) {
             updateGameInfo(winInfo);
             displayWinner(player, 'dia', 0);
         }
@@ -211,14 +226,14 @@ function checkForWinner() {
                 break;
             }
         }
-        if (antiDiagWin){
+        if (antiDiagWin) {
             updateGameInfo(winInfo);
             displayWinner(player, 'dia', 1);
-        } 
+        }
     }
 }
 
-function displayWinner(player, type, id){
+function displayWinner(player, type, id) {
     for (let i = 0; i < 7; i++) {
         for (let j = 0; j < 7; j++) {
             const c = document.getElementById(`cell-${i}-${j}`);
@@ -227,7 +242,7 @@ function displayWinner(player, type, id){
 
             if (isOuter) {
                 c.classList.remove("place-cube");
-            }else{
+            } else {
                 c.className = "cell";
                 if (type === 'row' && i === id) {
                     c.classList.add("win-cell");

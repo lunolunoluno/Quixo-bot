@@ -11,3 +11,11 @@ Each turn, a player chooses a cube and moves it according to the following rules
 END OF GAME: The winner is the player to make a horizontal, vertical or diagonal line with 5 cubes bearing their symbol. 
 
 [Source](https://cdn.1j1ju.com/medias/a8/5e/26-quixo-rulebook.pdf)
+
+# Start
+
+To start the project, run the following command:
+
+```sh
+python3 main.py 
+```
