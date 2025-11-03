@@ -1,0 +1,38 @@
+table {
+    border: 5px solid black;
+    border-collapse: collapse;
+    background-color: lightgray;
+}
+
+td {
+    width: 5em;
+    height: 5em;
+    text-align: center;       
+    vertical-align: middle;   
+}
+
+
+td.cell {
+    border: 1px solid black;
+}
+
+td.playable-cell {
+    background-color: white;
+}
+
+td.selected-cell {
+    background-color: red;
+}
+
+td.place-cube {
+    background-color: blue;
+    border-radius: 50px;
+}
+
+td.locked-cell {
+    background-color: gray;
+}
+
+td.win-cell {
+    background-color: lightgreen;
+}
