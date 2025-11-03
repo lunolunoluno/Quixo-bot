@@ -2,9 +2,11 @@
 
 const players = ["X", "O"];
 const boardState = Array.from({ length: 5 }, () => Array(5).fill("")); // empty 5x5 array
-const playerType = ["Human", "AI"];
 
+let playerType = ["Human"];
 let gameTurn = 0;
+let humanPlayers = [true, true]
+let aiTypes = [null, null]
 
 
 window.onload = function () {
@@ -13,10 +15,26 @@ window.onload = function () {
         document.getElementById("playerType2")
     ];
 
-    playerType.forEach((t, i) => {
-        selects.forEach(select => {
-            const opt = new Option(t, i);
-            select.add(opt);
+    fetch("http://127.0.0.1:5000/aitypes").then((response) => {
+        const responseData = response.json();
+        responseData.then((r) => {
+            r.types.forEach((t) => {
+                playerType.push(t);
+            })
+        }).then(() => {
+            playerType.forEach((t, i) => {
+                selects.forEach(select => {
+                    const opt = new Option(`${i}: ${t}`, t);
+                    select.add(opt);
+                });
+            });
+        });
+    }).catch(() => {
+        playerType.forEach((t, i) => {
+            selects.forEach(select => {
+                const opt = new Option(`${i}: ${t}`, t);
+                select.add(opt);
+            });
         });
     });
 
@@ -31,12 +49,29 @@ function newGame() {
     }
     gameTurn = 0;
 
+    ["playerType1", "playerType2"].forEach((id, i) => {
+        const value = document.getElementById(id).value;
+        humanPlayers[i] = value === "Human";
+        if (!humanPlayers[i]) {
+            aiTypes[i] = value;
+        } else {
+            aiTypes[i] = null;
+        }
+    });
+
     updateGameInfo();
     updateBoard();
+    if (!isCrtPlayerHuman()) {
+        AIplay();
+    }
 }
 
 function getCrtPlayer() {
     return players[gameTurn % 2];
+}
+
+function isCrtPlayerHuman() {
+    return humanPlayers[gameTurn % 2];
 }
 
 function updateGameInfo(info = null) {
@@ -79,6 +114,7 @@ function pickCube(selectedCell) {
             const isOuter = (i === 0 || i === 6 || j === 0 || j === 6);
             const c = document.getElementById(`cell-${i}-${j}`);
             if (isOuter) {
+                c.classList.remove("selected-outer-cell");
                 const row = parseInt(c.dataset.row);
                 const col = parseInt(c.dataset.col);
                 const selectedRow = parseInt(selectedCell.dataset.row);
@@ -91,7 +127,9 @@ function pickCube(selectedCell) {
                 // if the cell is on the same row or column but not adjacent to the selected cell
                 if ((sameRow || sameCol) && notAdjacent) {
                     c.classList.add("place-cube");
-                    c.onclick = () => placeCube(c, sameRow);
+                    if (isCrtPlayerHuman()) {
+                        c.onclick = () => placeCube(c, sameRow);
+                    }
                 }
             } else {
                 c.classList.remove("playable-cell");
@@ -149,6 +187,7 @@ function placeCube(selectedOuterCell, isSameRow) {
             c.classList.remove("selected-cell");
         }
     }
+    selectedOuterCell.classList.add("selected-outer-cell");
 
     nextTurn();
 }
@@ -157,7 +196,10 @@ function nextTurn() {
     gameTurn++;
     updateGameInfo();
     updateBoard();
-    checkForWinner();
+    const isWinner = checkForWinner();
+    if (!isCrtPlayerHuman() && !isWinner) {
+        AIplay();
+    }
 }
 
 function updateBoard() {
@@ -168,8 +210,12 @@ function updateBoard() {
 
             const isPlayable = (boardState[i][j] === getCrtPlayer() || boardState[i][j] === '');
             if ((i === 0 || i === 4 || j === 0 || j === 4) && isPlayable) {
-                c.className = "playable-cell cell";
-                c.onclick = () => pickCube(c);
+                if (isCrtPlayerHuman()) {
+                    c.className = "playable-cell cell";
+                    c.onclick = () => pickCube(c);
+                } else {
+                    c.className = "cell"
+                }
             } else {
                 c.className = "locked-cell cell";
             }
@@ -178,6 +224,7 @@ function updateBoard() {
 }
 
 function checkForWinner() {
+    let isWinner = false;
     const size = 5;
     for (const player of players) {
         const winInfo = `${player} Won !`
@@ -187,6 +234,7 @@ function checkForWinner() {
             if (boardState[row].every(cell => cell === player)) {
                 updateGameInfo(winInfo);
                 displayWinner(player, 'row', row + 1);
+                isWinner = true;
             }
         }
 
@@ -202,6 +250,7 @@ function checkForWinner() {
             if (columnWin) {
                 updateGameInfo(winInfo);
                 displayWinner(player, 'col', col + 1);
+                isWinner = true;
             }
         }
 
@@ -216,6 +265,7 @@ function checkForWinner() {
         if (mainDiagWin) {
             updateGameInfo(winInfo);
             displayWinner(player, 'dia', 0);
+            isWinner = true;
         }
 
         // Check anti-diagonal (top-right -> bottom-left)
@@ -229,8 +279,10 @@ function checkForWinner() {
         if (antiDiagWin) {
             updateGameInfo(winInfo);
             displayWinner(player, 'dia', 1);
+            isWinner = true;
         }
     }
+    return isWinner;
 }
 
 function displayWinner(player, type, id) {
@@ -241,7 +293,7 @@ function displayWinner(player, type, id) {
             c.onclick = null;
 
             if (isOuter) {
-                c.classList.remove("place-cube");
+                c.className = "outer-cell";
             } else {
                 c.className = "cell";
                 if (type === 'row' && i === id) {
@@ -260,3 +312,55 @@ function displayWinner(player, type, id) {
         }
     }
 }
+
+function AIplay() {
+    const bodyData = {
+        'ai_type': aiTypes[gameTurn % 2],
+        'board': boardState,
+        'player': getCrtPlayer()
+    };
+    fetch("http://127.0.0.1:5000/aimove", {
+        method: 'POST',
+        body: JSON.stringify(bodyData),
+        headers: {
+            "Content-Type": "application/json",
+        }
+    }).then((response) => {
+        response.json().then((data) => {
+            const s_r = data.move.source.row + 1;
+            const s_c = data.move.source.col + 1; 
+            const selectedCell = document.getElementById(`cell-${s_r}-${s_c}`);
+            setTimeout(() => {
+                pickCube(selectedCell);
+            }, 500);
+            
+            const d_r = data.move.dest.row + 1;
+            const d_c = data.move.dest.col + 1;
+            let r = 0;
+            let c = 0;
+            if (d_r === s_r) {
+                r = d_r;
+                if (d_c === 1) {
+                    c = 0;
+                } else {
+                    c = 6;
+                }
+            } else {
+                c = d_c;
+                if (d_r === 1) {
+                    r = 0;
+                } else {
+                    r = 6;
+                }
+            }
+            const selectedOuterCell = document.getElementById(`cell-${r}-${c}`);
+            const isSameRow = (d_r === s_r)
+
+            setTimeout(() => {
+                placeCube(selectedOuterCell, isSameRow);
+            }, 1000);
+        });
+    })
+        .catch(() => alert("Error while reading AI move!"));
+}
+

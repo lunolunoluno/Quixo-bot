@@ -26,7 +26,12 @@ td.selected-cell {
 
 td.place-cube {
     background-color: blue;
-    border-radius: 50px;
+    border-radius: 50%;
+}
+
+td.selected-outer-cell {
+    background-color: green;
+    border-radius: 50%;
 }
 
 td.locked-cell {
