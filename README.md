@@ -14,6 +14,15 @@ END OF GAME: The winner is the player to make a horizontal, vertical or diagonal
 
 [Source](https://cdn.1j1ju.com/medias/a8/5e/26-quixo-rulebook.pdf)
 
+# Requirements
+This code was created with python 3.8 but probably works with most modern versions. 
+
+To install the requirements:
+
+```sh
+pip install -r ./requirements.txt
+```
+
 # Start
 
 To start the project, run the following command:
