@@ -1,8 +1,9 @@
 import webbrowser
 import os
 
-from agents.utils import Player
+from agents.utils import INITPOS, Player
 from agents.randombot import RandomBot
+from agents.simplebot import SimpleBot
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -11,7 +12,8 @@ CORS(app, origins="*", methods=["GET", "POST"])
 
 # list of all bots available
 ai_types = {
-    "Random": RandomBot
+    "Random bot": RandomBot,
+    "Simple bot": SimpleBot
 }
 
 @app.get("/aitypes")

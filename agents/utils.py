@@ -84,3 +84,11 @@ def get_position_after_move(position: List[List[chr]], move: Move, player: Playe
         raise ValueError("Source and destination must be in the same row or column")
 
     return new_pos
+
+
+def convert_position_to_string(position: List[List[chr]], player: Player) -> str:
+    string_pos = player.name
+    string_pos += "".join([
+        '.' if c=='' else c for row in position for c in row
+    ])
+    return string_pos
