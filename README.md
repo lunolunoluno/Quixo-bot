@@ -1,6 +1,8 @@
 # QUIXO BOT
 This is an attempt at making an AI that plays the game [Quixo](https://boardgamegeek.com/wiki/page/thing:3190).
 
+Note: Quixo is a [solved game](https://arxiv.org/abs/2007.15895). 
+
 ## Game rules
 
 Each turn, a player chooses a cube and moves it according to the following rules. In no event can a player miss their turn.
@@ -19,3 +21,11 @@ To start the project, run the following command:
 ```sh
 python3 main.py 
 ```
+
+# Bot created
+
+## Random
+
+> implemented in `agents/randombot.py`
+
+This bot will play a random move from all the legal moves available. 

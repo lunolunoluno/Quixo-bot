@@ -5,8 +5,8 @@ const boardState = Array.from({ length: 5 }, () => Array(5).fill("")); // empty 
 
 let playerType = ["Human"];
 let gameTurn = 0;
-let humanPlayers = [true, true]
-let aiTypes = [null, null]
+let humanPlayers = [true, true];
+let aiTypes = [null, null];
 
 
 window.onload = function () {
@@ -83,7 +83,7 @@ function updateGameInfo(info = null) {
 }
 
 function generateBoard() {
-    let board = "<table style='border-collapse: collapse;'>";
+    let board = "<table>";
     for (let i = 0; i < 7; i++) {
         board += "<tr>";
         for (let j = 0; j < 7; j++) {
@@ -196,8 +196,8 @@ function nextTurn() {
     gameTurn++;
     updateGameInfo();
     updateBoard();
-    const isWinner = checkForWinner();
-    if (!isCrtPlayerHuman() && !isWinner) {
+    const gameEnded = checkForWinner();
+    if (!isCrtPlayerHuman() && !gameEnded) {
         AIplay();
     }
 }
@@ -224,7 +224,7 @@ function updateBoard() {
 }
 
 function checkForWinner() {
-    let isWinner = false;
+    let gameEnded = false;
     const size = 5;
     for (const player of players) {
         const winInfo = `${player} Won !`
@@ -234,7 +234,7 @@ function checkForWinner() {
             if (boardState[row].every(cell => cell === player)) {
                 updateGameInfo(winInfo);
                 displayWinner(player, 'row', row + 1);
-                isWinner = true;
+                gameEnded = true;
             }
         }
 
@@ -250,7 +250,7 @@ function checkForWinner() {
             if (columnWin) {
                 updateGameInfo(winInfo);
                 displayWinner(player, 'col', col + 1);
-                isWinner = true;
+                gameEnded = true;
             }
         }
 
@@ -265,7 +265,7 @@ function checkForWinner() {
         if (mainDiagWin) {
             updateGameInfo(winInfo);
             displayWinner(player, 'dia', 0);
-            isWinner = true;
+            gameEnded = true;
         }
 
         // Check anti-diagonal (top-right -> bottom-left)
@@ -279,10 +279,10 @@ function checkForWinner() {
         if (antiDiagWin) {
             updateGameInfo(winInfo);
             displayWinner(player, 'dia', 1);
-            isWinner = true;
+            gameEnded = true;
         }
     }
-    return isWinner;
+    return gameEnded;
 }
 
 function displayWinner(player, type, id) {
