@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from dataclasses import dataclass
 
 # CLASSES
@@ -92,3 +92,34 @@ def convert_position_to_string(position: List[List[chr]], player: Player) -> str
         '.' if c=='' else c for row in position for c in row
     ])
     return string_pos
+
+
+def check_for_winner(position: List[List[chr]]) -> Optional[Player]:
+    for player in Player:
+        # check row
+        for row in position:
+            if all(cell == player.name for cell in row):
+                return player
+
+        # check column
+        for col in range(5):
+            if all(position[row][col] == player.name for row in range(5)):
+                return player
+
+        # check main diagonal (top-left -> bottom-right)
+        if all(position[i][i] == player.name for i in range(5)):
+            return player
+
+        # check anti-diagonal (top-right -> bottom-left)
+        if all(position[i][5 - 1 - i] == player.name for i in range(5)):
+            return player
+    return None
+
+
+def print_pos(position: List[List[chr]]) -> None:
+    print("_"*11)
+    for row in position:
+        row_str = "|"
+        row_str += "|".join([' ' if c == '' else c for c in row])
+        print(row_str + "|")
+

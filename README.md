@@ -39,3 +39,6 @@ This is bot uses a simple implementation of the [Negamax](https://www.chessprogr
 Since there is no optimization implemented on the Negamax algorithm, the max depth is 3, as a higher depth takes too long.
 The random noise applied to the evaluation function is to avoid having the bot playing the same move in the same positions but the random noise is small enough so that a move with a lower evaluation shouldn't be promoted because of this noise. 
 
+While this implementation is very basic it is enough to win 100% of the games against the Random bot.
+Additionally, when paired against itself, the bot with the X will always win.
+
