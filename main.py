@@ -1,7 +1,8 @@
 import webbrowser
 import os
+import math
 
-from agents.utils import INITPOS, Player
+from agents.utils import INITPOS, Move, Player, get_position_after_move
 from agents.randombot import RandomBot
 from agents.simplebot import SimpleBot
 from flask import Flask, request
@@ -30,6 +31,8 @@ def get_ai_move():
 
     bot = ai_types[ai_t]()
     m, eval, new_pos = bot.play(position, player)
+    if math.isinf(eval):
+        eval = math.copysign(1, eval) * 1000
 
     return {
         "move": {
@@ -39,6 +42,18 @@ def get_ai_move():
         "eval": eval,
         "newboard": new_pos
     }
+
+@app.post("/playmove")
+def make_move():
+    data = request.get_json()
+    position = data["board"]
+    m_source = (data["source_row"], data["source_col"])
+    m_dest = (data["dest_row"], data["dest_col"])
+    move = Move(m_source, m_dest)
+    player = Player.X if data['player'] == Player.X.name else Player.O
+
+    new_pos = get_position_after_move(position, move, player)
+    return {"newboard": new_pos}
 
 
 

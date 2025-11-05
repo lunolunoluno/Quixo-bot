@@ -1,8 +1,8 @@
 "use strict";
 
 const players = ["X", "O"];
-const boardState = Array.from({ length: 5 }, () => Array(5).fill("")); // empty 5x5 array
 
+let boardState = Array.from({ length: 5 }, () => Array(5).fill("")); // empty 5x5 array
 let playerType = ["Human"];
 let gameTurn = 0;
 let humanPlayers = [true, true];
@@ -128,7 +128,7 @@ function pickCube(selectedCell) {
                 if ((sameRow || sameCol) && notAdjacent) {
                     c.classList.add("place-cube");
                     if (isCrtPlayerHuman()) {
-                        c.onclick = () => placeCube(c, sameRow);
+                        c.onclick = () => placeCube(c, selectedRow, selectedCol);
                     }
                 }
             } else {
@@ -139,41 +139,10 @@ function pickCube(selectedCell) {
     }
 }
 
-function placeCube(selectedOuterCell, isSameRow) {
-    // the -1 is to match the index of the boardState array
-    const refRow = parseInt(selectedOuterCell.dataset.row) - 1;
-    const refCol = parseInt(selectedOuterCell.dataset.col) - 1;
 
-    // place the cube
-    if (isSameRow) {
-        if (refCol === -1) {
-            // placing the cube from the left
-            for (let i = 4; i > 0; i--) {
-                boardState[refRow][i] = boardState[refRow][i - 1];
-            }
-            boardState[refRow][0] = getCrtPlayer();
-        } else {
-            // placing the cube from the right
-            for (let i = 0; i < 4; i++) {
-                boardState[refRow][i] = boardState[refRow][i + 1];
-            }
-            boardState[refRow][4] = getCrtPlayer();
-        }
-    } else {
-        if (refRow === -1) {
-            // placing the cube from the top
-            for (let i = 4; i > 0; i--) {
-                boardState[i][refCol] = boardState[i - 1][refCol];
-            }
-            boardState[0][refCol] = getCrtPlayer();
-        } else {
-            // placing the cube from the bottom
-            for (let i = 0; i < 4; i++) {
-                boardState[i][refCol] = boardState[i + 1][refCol];
-            }
-            boardState[4][refCol] = getCrtPlayer();
-        }
-    }
+function placeCube(selectedOuterCell, sourceRow, sourceCol) {
+    const destRow = parseInt(selectedOuterCell.dataset.row);
+    const destCol = parseInt(selectedOuterCell.dataset.col);
 
     // reset the outer cells
     for (let i = 0; i < 7; i++) {
@@ -189,7 +158,30 @@ function placeCube(selectedOuterCell, isSameRow) {
     }
     selectedOuterCell.classList.add("selected-outer-cell");
 
-    nextTurn();
+    const bodyData = {
+        'board': boardState,
+        'player': getCrtPlayer(),
+        'source_row': sourceRow - 1,
+        'source_col': sourceCol - 1,
+        'dest_row': (destRow === sourceRow) ? destRow - 1 : (destRow === 0) ? destRow : destRow - 2,
+        'dest_col': (destCol === sourceCol) ? destCol - 1 : (destCol === 0) ? destCol : destCol - 2
+    };
+    fetch("http://127.0.0.1:5000/playmove", {
+        method: 'POST',
+        body: JSON.stringify(bodyData),
+        headers: {
+            "Content-Type": "application/json",
+        }
+    }).then((response) => {
+        console.log("move played !");
+        response.json().then((data) => {
+            console.log(data);
+            boardState = data.newboard;
+            console.log(boardState);
+            updateBoard();
+            nextTurn();
+        });
+    });
 }
 
 function nextTurn() {
@@ -209,8 +201,8 @@ function updateBoard() {
             c.innerHTML = boardState[i][j];
 
             const isPlayable = (boardState[i][j] === getCrtPlayer() || boardState[i][j] === '');
-            if ((i === 0 || i === 4 || j === 0 || j === 4) && isPlayable) {
-                if (isCrtPlayerHuman()) {
+            if ((i === 0 || i === 4 || j === 0 || j === 4)) {
+                if (isCrtPlayerHuman() && isPlayable) {
                     c.className = "playable-cell cell";
                     c.onclick = () => pickCube(c);
                 } else {
@@ -328,12 +320,12 @@ function AIplay() {
     }).then((response) => {
         response.json().then((data) => {
             const s_r = data.move.source.row + 1;
-            const s_c = data.move.source.col + 1; 
+            const s_c = data.move.source.col + 1;
             const selectedCell = document.getElementById(`cell-${s_r}-${s_c}`);
             setTimeout(() => {
                 pickCube(selectedCell);
             }, 500);
-            
+
             const d_r = data.move.dest.row + 1;
             const d_c = data.move.dest.col + 1;
             let r = 0;
@@ -354,10 +346,9 @@ function AIplay() {
                 }
             }
             const selectedOuterCell = document.getElementById(`cell-${r}-${c}`);
-            const isSameRow = (d_r === s_r)
 
             setTimeout(() => {
-                placeCube(selectedOuterCell, isSameRow);
+                placeCube(selectedOuterCell, s_r, s_c);
             }, 1000);
         });
     })
