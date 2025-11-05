@@ -43,7 +43,7 @@ This bot will play a random move from all the legal moves available.
 
 > implemented in `agents/simplebot.py`
 
-This is bot uses a simple implementation of the [Negamax](https://www.chessprogramming.org/Negamax) algorithm for move search and the evaluation of a position is defined as `the sum of all of current player's pieces` - `the sum of all of the opponent's pieces` + `some random noise`.
+This is bot uses a simple implementation of the [Negamax](https://www.chessprogramming.org/Negamax) algorithm for move search and the evaluation of a position is defined as `the sum of all of current player's pieces` - `the sum of all of the opponent's pieces` + `some random noise` unless the position is winning for one of the player, in which case the evaluation is inf or -inf depending on whose turn it is.
 
 Since there is no optimization implemented on the Negamax algorithm, the max depth is 3, as a higher depth takes too long.
 The random noise applied to the evaluation function is to avoid having the bot playing the same move in the same positions but the random noise is small enough so that a move with a lower evaluation shouldn't be promoted because of this noise. 

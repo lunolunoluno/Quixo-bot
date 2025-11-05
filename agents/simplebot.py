@@ -1,6 +1,6 @@
 import random
 
-from agents.utils import BotClassModel, Move, Player, get_all_legal_moves, get_position_after_move, convert_position_to_string, get_opposite_player
+from agents.utils import BotClassModel, Move, Player, get_all_legal_moves, get_position_after_move, convert_position_to_string, get_opposite_player, check_for_winner
 from typing import List, Tuple
 
 
@@ -32,11 +32,19 @@ class SimpleBot(BotClassModel):
                 if score > max:
                     max = score
                     best_move = m
+                if max == float('inf'):
+                    break
             return max, best_move
         return __negamax(3, position, player)
     
     def __evaluate_position(self, position: List[List[chr]], player: Player) -> float:
-        pos_str = convert_position_to_string(position, player)[1:]
-        nb_player = pos_str.count(player.name)
-        nb_opp = pos_str.count(get_opposite_player(player).name)
-        return (nb_player - nb_opp) + random.random()
+        winner = check_for_winner(position)
+        if winner == player:
+            return float('inf')
+        elif winner == get_opposite_player(player):
+            return float('-inf')
+        else:
+            pos_str = convert_position_to_string(position, player)[1:]
+            nb_player = pos_str.count(player.name)
+            nb_opp = pos_str.count(get_opposite_player(player).name)
+            return (nb_player - nb_opp) + random.random()

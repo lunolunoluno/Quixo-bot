@@ -13,8 +13,8 @@ bot_list = {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     bots_list_str = ', '.join(list(bot_list.keys()))
-    parser.add_argument("player_x", help=f"Bot that will play 'X'. Must be one of the following values: {bots_list_str}", type=str)
-    parser.add_argument("player_o", help=f"Bot that will play 'O'. Must be one of the following values: {bots_list_str}", type=str)
+    parser.add_argument("player_x", help=f"Bot playing 'X'. Must be one of the following values: {bots_list_str}", type=str)
+    parser.add_argument("player_o", help=f"Bot playing 'O'. Must be one of the following values: {bots_list_str}", type=str)
     parser.add_argument("nb_games", help="Number of games played between the bots (100 by default).", type=int, nargs='?', default=100)
     parser.add_argument('debug', help='Show debug informations.', type=bool, nargs='?', default=False)
     args = parser.parse_args()
