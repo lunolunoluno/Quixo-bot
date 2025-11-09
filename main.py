@@ -9,6 +9,7 @@ from tqdm import tqdm
 from agents.utils import INITPOS, Move, Player, bitboard_play_move, convert_bitboard_to_position, get_position_after_move, convert_position_to_bitboard, print_pos, get_all_legal_moves
 from agents.randombot import RandomBot
 from agents.simplebot import SimpleBot
+from agents.simplebotv2 import SimpleBotV2
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -18,7 +19,8 @@ CORS(app, origins="*", methods=["GET", "POST"])
 # list of all bots available
 ai_types = {
     "Random bot": RandomBot,
-    "Simple bot": SimpleBot
+    "Simple bot": SimpleBot,
+    "Simple bot v2": SimpleBotV2
 }
 
 @app.get("/aitypes")

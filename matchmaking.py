@@ -4,10 +4,12 @@ from tqdm import tqdm
 from agents.utils import INITPOS, BotClassModel, Player, check_for_winner, print_pos
 from agents.randombot import RandomBot
 from agents.simplebot import SimpleBot
+from agents.simplebotv2 import SimpleBotV2
 
 bot_list = {
     "random": RandomBot,
-    "simple": SimpleBot
+    "simple": SimpleBot,
+    "simplev2": SimpleBotV2
 }
 
 if __name__ == "__main__":
