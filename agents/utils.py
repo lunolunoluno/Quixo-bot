@@ -192,6 +192,47 @@ def check_for_winner(position: List[List[chr]], player: Player) -> Optional[Play
     return None
 
 
+def check_for_winner_bitboard(bitboard: int, player: Player) -> Optional[Player]:
+    bits_o = (0xffffffff & bitboard)
+    bits_x = (bitboard >> 32)
+    def __is_winning(bits: int) -> bool:
+        # Check rows
+        for i in range(0, 25, 5):
+            check_row_area = ((1 << 5) - 1) << i
+            if check_row_area & bits == check_row_area:
+                return True
+        # Check for column
+        check_col_areas = [
+            0x108421,
+            0x210842, 
+            0x421084,
+            0x842108,
+            0x1084210
+        ]
+        for area in check_col_areas:
+            if area & bits == area:
+                return True
+        # Check diagonals
+        if bits & 0x1041041 == 0x1041041:
+            # Main diagonal
+            return True
+        if bits & 0x111110 == 0x111110:
+            # Anti diagonal
+            return True
+        return False
+    if player == Player.O:
+        if __is_winning(bits_x):
+            return Player.X
+        if __is_winning(bits_o):
+            return Player.O
+    else:
+        if __is_winning(bits_o):
+            return Player.O
+        if __is_winning(bits_x):
+            return Player.X
+    return None
+
+
 def print_pos(position: List[List[chr]]) -> None:
     print("_"*11)
     for row in position:
