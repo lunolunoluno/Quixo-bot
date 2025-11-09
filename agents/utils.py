@@ -94,6 +94,79 @@ def convert_position_to_string(position: List[List[chr]], player: Player) -> str
     return string_pos
 
 
+def convert_position_to_bitboard(position: List[List[chr]]) -> int:
+    bit_x = int(''.join('1' if c==Player.X.name else '0' for row in position for c in row), 2)
+    bit_o = int(''.join('1' if c==Player.O.name else '0' for row in position for c in row), 2)
+    bit_board = bit_o | (bit_x << 32)
+    return bit_board
+
+
+def convert_bitboard_to_position(bitboard: int) -> List[List[chr]]:
+    bit_o_str = format((0xffffffff & bitboard), '025b')
+    bit_x_str = format((bitboard >> 32), '025b')
+    pos = [['' for _ in range(5)] for _ in range(5)]
+    for i, (os, xs) in enumerate(zip(bit_o_str, bit_x_str)):
+        if os == '1':
+            pos[i // 5][i % 5] = "O"
+        if xs == '1':
+            pos[i // 5][i % 5] = "X"
+    return pos
+
+
+def bitboard_play_move(bitboard: int, move: Move, player: Player) -> int:
+    start = 24 - (move.source[0] * 5 + move.source[1])
+    end = 24 - (move.dest[0] * 5 + move.dest[1])
+    # row move
+    if move.source[0] == move.dest[0]:
+        # Right-pushing move
+        if move.source[1] > move.dest[1]:
+            bb_shift_area = ((1 << (end - start + 1)) - 1) << start
+            bb_shift_area = bb_shift_area | (bb_shift_area << 32)
+            # shift all bits of the row to the right
+            bb_after_shift = (bitboard & ~bb_shift_area) | ((bitboard & bb_shift_area) >> 1) & bb_shift_area
+            
+        # Left-pushing move
+        if move.source[1] < move.dest[1]:
+            bb_shift_area = ((1 << (start - end + 1)) - 1) << end
+            bb_shift_area = bb_shift_area | (bb_shift_area << 32)
+            # shift all bits of the row to the left
+            bb_after_shift = (bitboard & ~bb_shift_area) | ((bitboard & bb_shift_area) << 1) & bb_shift_area
+
+        # set to 1 the bit that represent the new piece/moved piece
+        bb_after_shift |= (1 << end) if player == Player.O else (1 << end + 32)
+        return bb_after_shift
+    
+    # column move
+    if move.source[1] == move.dest[1]:
+        col_id_reversed = 4 - move.source[1]
+        start_row_id_reversed = 4 - move.source[0]
+        end_row_id_reversed = 4 - move.dest[0]
+
+        # Down-pushing move
+        if move.source[0] > move.dest[0]:
+            bb_shift_area = 0
+            for i in range(start_row_id_reversed * 5, (end_row_id_reversed + 1) * 5, 5):
+                bb_shift_area |= (1 << i + col_id_reversed)
+            bb_shift_area = bb_shift_area | (bb_shift_area << 32)
+            # shift all bits of the column down
+            bb_after_shift = (bitboard & ~bb_shift_area) | (((bitboard & bb_shift_area) >> 5) & bb_shift_area)
+        
+        # Up-pushing move
+        if move.source[0] < move.dest[0]:
+            bb_shift_area = 0
+            for i in range(end_row_id_reversed * 5, (start_row_id_reversed + 1) * 5, 5):
+                bb_shift_area |= (1 << i + col_id_reversed)
+            bb_shift_area = bb_shift_area | (bb_shift_area << 32)
+            # shift all bits of the column up
+            bb_after_shift = (bitboard & ~bb_shift_area) | (((bitboard & bb_shift_area) << 5) & bb_shift_area)
+
+        # set to 1 the bit that represent the new piece/moved piece
+        bb_after_shift |= (1 << end) if player == Player.O else (1 << end + 32)
+        return bb_after_shift
+
+    return 0
+
+
 def check_for_winner(position: List[List[chr]]) -> Optional[Player]:
     for player in Player:
         # check row
