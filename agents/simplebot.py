@@ -38,7 +38,7 @@ class SimpleBot(BotClassModel):
         return __negamax(3, position, player)
     
     def __evaluate_position(self, position: List[List[chr]], player: Player) -> float:
-        winner = check_for_winner(position)
+        winner = check_for_winner(position, player)
         if winner == player:
             return float('inf')
         elif winner == get_opposite_player(player):

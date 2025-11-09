@@ -36,13 +36,13 @@ if __name__ == "__main__":
             _, _, pos = p_x.play(pos, Player.X)
             if debug:
                 print_pos(pos)
-            winner = check_for_winner(pos) 
+            winner = check_for_winner(pos, Player.X) 
             if winner is not None:
                 break
             _, _, pos = p_o.play(pos, Player.O)
             if debug:
                 print_pos(pos)
-            winner = check_for_winner(pos) 
+            winner = check_for_winner(pos, Player.O) 
         
         if winner == Player.X:
             res['x_win'] += 1

@@ -122,14 +122,14 @@ def bitboard_play_move(bitboard: int, move: Move, player: Player) -> int:
         if move.source[1] > move.dest[1]:
             bb_shift_area = ((1 << (end - start + 1)) - 1) << start
             bb_shift_area = bb_shift_area | (bb_shift_area << 32)
-            # shift all bits of the row to the right
+            # shift all bits of the area to the right
             bb_after_shift = (bitboard & ~bb_shift_area) | ((bitboard & bb_shift_area) >> 1) & bb_shift_area
             
         # Left-pushing move
         if move.source[1] < move.dest[1]:
             bb_shift_area = ((1 << (start - end + 1)) - 1) << end
             bb_shift_area = bb_shift_area | (bb_shift_area << 32)
-            # shift all bits of the row to the left
+            # shift all bits of the area to the left
             bb_after_shift = (bitboard & ~bb_shift_area) | ((bitboard & bb_shift_area) << 1) & bb_shift_area
 
         # set to 1 the bit that represent the new piece/moved piece
@@ -148,7 +148,7 @@ def bitboard_play_move(bitboard: int, move: Move, player: Player) -> int:
             for i in range(start_row_id_reversed * 5, (end_row_id_reversed + 1) * 5, 5):
                 bb_shift_area |= (1 << i + col_id_reversed)
             bb_shift_area = bb_shift_area | (bb_shift_area << 32)
-            # shift all bits of the column down
+            # shift all bits of the area down
             bb_after_shift = (bitboard & ~bb_shift_area) | (((bitboard & bb_shift_area) >> 5) & bb_shift_area)
         
         # Up-pushing move
@@ -157,7 +157,7 @@ def bitboard_play_move(bitboard: int, move: Move, player: Player) -> int:
             for i in range(end_row_id_reversed * 5, (start_row_id_reversed + 1) * 5, 5):
                 bb_shift_area |= (1 << i + col_id_reversed)
             bb_shift_area = bb_shift_area | (bb_shift_area << 32)
-            # shift all bits of the column up
+            # shift all bits of the area up
             bb_after_shift = (bitboard & ~bb_shift_area) | (((bitboard & bb_shift_area) << 5) & bb_shift_area)
 
         # set to 1 the bit that represent the new piece/moved piece
@@ -167,8 +167,11 @@ def bitboard_play_move(bitboard: int, move: Move, player: Player) -> int:
     return 0
 
 
-def check_for_winner(position: List[List[chr]]) -> Optional[Player]:
-    for player in Player:
+def check_for_winner(position: List[List[chr]], player: Player) -> Optional[Player]:
+    # Start with the opponent because if a player creates two lines with distinct symbols in a single turn, 
+    # then the opponent is the winner
+    players = [get_opposite_player(player), player]
+    for player in players:
         # check row
         for row in position:
             if all(cell == player.name for cell in row):
